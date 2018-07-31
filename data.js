@@ -85,14 +85,14 @@ var locationServices = {
 var weatherServices = [
 	{
 		description: "Get the current weather",
-		indexes: ["What's the weather now","is it rain today","how is outside"],
+		indexes: ["What's the weather now","what is the weather now","is it rain today","how is outside"],
 		action: function(i,wildcard){
 			getLoc({need: 'weather',area: 'location'});
 		}
 	},
 	{
 		description: "weather at remote locations",
-		indexes:["what is the weather at *"],
+		indexes:["what is the weather at *","what's the weather at *"],
 		smart: true,
 		action: function(i,wildcard){
 			getLoc({need: 'weather',area: wildcard});
@@ -156,7 +156,7 @@ var speechServices = [
 	{
 		description: "pronunciate the recognized text",
 		smart: true,
-		indexes: ["speak *","pronunciate *"],
+		indexes: ["speak *","pronunciate *","pronounciate *"],
 		action: function(i,wildcard){
 			artyom.say(wildcard);
 			output.innerHTML = wildcard;

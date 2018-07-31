@@ -1,7 +1,7 @@
 const artyom = new Artyom();
 var output = document.getElementById('output');
 var removeLastTwoWords = (word) => {word = word.substring(0, word.lastIndexOf(" "));word = word.substring(0, word.lastIndexOf(" "));return word};
-var searchInstruction = "show me the another meaning of stranger";
+// var searchInstruction = "pronounciate pschycology";
 function openUrl(url){
 	window.open(url,"_blank");	
 }
@@ -164,30 +164,55 @@ function locationService(response,service,coords){
 		}
 	}
 	else if(service.need === 'distance'){
-		var directionsService = new google.maps.DirectionsService();
+		var origin = response.results[0].address_components[response.results[0].address_components.length-4].long_name;
+		var destination = service.area;
+		try{				
+			var distanceURL = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${destination}&mode=driving&units=imperial&language=en-EN`;
+		   	let request = new XMLHttpRequest();
+		    request.onreadystatechange = function() {
+		      if (this.readyState === 4 && this.status === 200) {
+		        let distanceResponse = JSON.parse(this.responseText);
+		        console.log(distanceResponse);
+		        var distanceResult = distanceResponse.rows[0].elements[0].distance.text;
+		        var distanceResult = Math.trunc(distanceResult.replace(/[^0-9]/g,'') * 1.609344);
+		        // console.log(distanceResult);
+		  		var distance = "It's approximately "+distanceResult+" kilometers from "+origin;
+		        // var distanceResult = "The weather at "+service.area+" is "+weatherResponse.main.temp+" degrees with "+weatherResponse.weather[0].description;
+		      	output.innerHTML = distance;
+				artyom.say(distance);	 
+		      }
+		    }
+		    request.open("GET", distanceURL, true);
+		    request.send();	
+		}catch(error){
+			let res = "This seems like a technical issue. Please reload the page and try again.";
+			output.innerHTML = res;
+			artyom.say(res);
+		}
 
-		var locResponse = {...response};
-		var res = JSON.stringify(locResponse.results[0].address_components[response.results[0].address_components.length-4].long_name).replace(/\"/g, "");
+		// var directionsService = new google.maps.DirectionsService();
 
-		var request = {
-		  origin      : res, // a city, full address, landmark etc
-		  destination : service.area,
-		  travelMode  : google.maps.DirectionsTravelMode.DRIVING
-		};
-		directionsService.route(request, function(response, status) {
-		  if ( status == google.maps.DirectionsStatus.OK ) {
-		  		var distance = Math.round((response.routes[0].legs[0].distance.value)/1000); // the distance in metres
+		// var locResponse = {...response};
+		// var res = JSON.stringify(locResponse.results[0].address_components[response.results[0].address_components.length-4].long_name).replace(/\"/g, "");
+
+		// var request = {
+		//   origin      : res, // a city, full address, landmark etc
+		//   destination : service.area,
+		//   travelMode  : google.maps.DirectionsTravelMode.DRIVING
+		// };
+		// directionsService.route(request, function(response, status) {
+		//   if ( status == google.maps.DirectionsStatus.OK ) {
+		//   		var distance = Math.round((response.routes[0].legs[0].distance.value)/1000); // the distance in metres
 		  		
-		  		distance = "It's approximately "+distance+" kilometers from "+res;
-		  		output.innerHTML = distance;
-				artyom.say(distance);
-		  }
-		  else {
-		    // oops, there's no route between these two locations
-		    // every time this happens, a kitten dies
-		    // so please, ensure your address is formatted properly
-		  }
-		});
+		//   		output.innerHTML = distance;
+		// 		artyom.say(distance);
+		//   }
+		//   else {
+		//     // oops, there's no route between these two locations
+		//     // every time this happens, a kitten dies
+		//     // so please, ensure your address is formatted properly
+		//   }
+		// });
 
 	}
 	else if(service.need == 'navigation'){
